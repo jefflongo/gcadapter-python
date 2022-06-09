@@ -8,8 +8,18 @@ from gcadapter import GCAdapter, GCControllerStatus
 
 class SerialInterface:
     def __init__(self):
-        self.statuses: list[GCControllerStatus] = []
-        self.origins: list[GCControllerStatus] = []
+        self.statuses: list[GCControllerStatus] = [
+            GCControllerStatus(),
+            GCControllerStatus(),
+            GCControllerStatus(),
+            GCControllerStatus(),
+        ]
+        self.origins: list[GCControllerStatus] = [
+            GCControllerStatus(),
+            GCControllerStatus(),
+            GCControllerStatus(),
+            GCControllerStatus(),
+        ]
         self.rumble = [False, False, False, False]
         self.rumble_needs_update = threading.Event()
 

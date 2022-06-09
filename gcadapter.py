@@ -10,6 +10,7 @@ class GCControllerStatus:
 
     def __init__(self):
         self.connected: bool = False
+        self.get_origin: bool = False
 
         self.a: bool = False
         self.b: bool = False
