@@ -38,6 +38,7 @@ class GCAdapter:
     DEFAULT_TIMEOUT = 16
 
     def __init__(self):
+        self.polling = False
         self.dev: usb.core.Device = usb.core.find(idVendor=0x057E, idProduct=0x0337)
 
         if self.dev is None:
@@ -77,6 +78,8 @@ class GCAdapter:
         if self.out_ep.write([0x13], timeout=self.DEFAULT_TIMEOUT) != 1:
             raise IOError
 
+        self.polling = True
+
     def stop_polling(self) -> None:
         if self.out_ep.write([0x14], timeout=self.DEFAULT_TIMEOUT) != 1:
             raise IOError
@@ -85,13 +88,21 @@ class GCAdapter:
         if (len(bytes)) != 2 or bytes[0] != 0x24:
             raise IOError
 
+        self.polling = False
+
     def get_origins(self) -> list[GCControllerStatus]:
+        polling: bool = self.polling
+        self.stop_polling()
+
         if self.out_ep.write([0x12], timeout=self.DEFAULT_TIMEOUT) != 1:
             raise IOError
 
         bytes = self.in_ep.read(self.in_ep.wMaxPacketSize, timeout=self.DEFAULT_TIMEOUT)
         if len(bytes) != 25 or bytes[0] != 0x22:
             raise IOError
+
+        if polling:
+            self.start_polling()
 
         origins = [
             GCControllerStatus(),
@@ -140,9 +151,9 @@ class GCAdapter:
             statuses[chan].l = (buttons & (1 << 11)) != 0
 
             statuses[chan].joystick_x = bytes[1 + (9 * chan) + 3]
-            statuses[chan].joystick_y = bytes[1 + (9 * chan) + 3]
-            statuses[chan].c_stick_x = bytes[1 + (9 * chan) + 4]
-            statuses[chan].c_stick_y = bytes[1 + (9 * chan) + 5]
+            statuses[chan].joystick_y = bytes[1 + (9 * chan) + 4]
+            statuses[chan].c_stick_x = bytes[1 + (9 * chan) + 5]
+            statuses[chan].c_stick_y = bytes[1 + (9 * chan) + 6]
             statuses[chan].l_analog = bytes[1 + (9 * chan) + 7]
             statuses[chan].r_analog = bytes[1 + (9 * chan) + 8]
 
