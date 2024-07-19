@@ -49,7 +49,7 @@ class GCAdapter:
             try:
                 self.dev.detach_kernel_driver(0)
             except usb.core.USBError as e:
-                raise IOError("Could not detach kernel driver: %s" % str(e)) from e
+                raise IOError(f"Could not detach kernel driver: {e}") from e
         self.dev.reset()
         self.dev.set_configuration()
         cfg: usb.core.Configuration = self.dev.get_active_configuration()
@@ -167,3 +167,6 @@ class GCAdapter:
             != 1
         ):
             raise IOError
+
+    def disconnect(self):
+        self.dev.reset()
