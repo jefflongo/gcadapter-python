@@ -32,6 +32,30 @@ class GCControllerStatus:
         self.l_analog: int = self.SHOULDER_DEFAULT_VALUE
         self.r_analog: int = self.SHOULDER_DEFAULT_VALUE
 
+    def __str__(self):
+        return (
+            f"connected:  {self.connected}\n"
+            f"get_origin: {self.get_origin}\n"
+            f"A:          {self.a}\n"
+            f"B:          {self.b}\n"
+            f"X:          {self.x}\n"
+            f"Y:          {self.y}\n"
+            f"START:      {self.start}\n"
+            f"D-LEFT:     {self.d_left}\n"
+            f"D-RIGHT:    {self.d_right}\n"
+            f"D-DOWN:     {self.d_down}\n"
+            f"D-UP:       {self.d_up}\n"
+            f"Z:          {self.z}\n"
+            f"R:          {self.r}\n"
+            f"L:          {self.l}\n"
+            f"SX:         {self.joystick_x}\n"
+            f"SY:         {self.joystick_y}\n"
+            f"CX:         {self.c_stick_x}\n"
+            f"CY:         {self.c_stick_y}\n"
+            f"LA:         {self.l_analog}\n"
+            f"RA:         {self.r_analog}"
+        )
+
 
 class GCAdapter:
     MAX_CONTROLLERS = 4
@@ -156,6 +180,20 @@ class GCAdapter:
             statuses[chan].c_stick_y = bytes[1 + (9 * chan) + 6]
             statuses[chan].l_analog = bytes[1 + (9 * chan) + 7]
             statuses[chan].r_analog = bytes[1 + (9 * chan) + 8]
+
+            # weird bug where sometimes all analog values are 0 despite connected
+            if statuses[chan].connected and all(
+                x == 0
+                for x in (
+                    statuses[chan].joystick_x,
+                    statuses[chan].joystick_y,
+                    statuses[chan].c_stick_x,
+                    statuses[chan].c_stick_y,
+                    statuses[chan].l_analog,
+                    statuses[chan].r_analog,
+                )
+            ):
+                raise IOError
 
         return statuses
 
