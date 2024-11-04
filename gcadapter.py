@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import platform
+
 import usb.core
 import usb.util
 
@@ -69,11 +71,12 @@ class GCAdapter:
             raise IOError("Could not find device")
 
         # adapter has one configuration descriptor - claim it
-        if self.dev.is_kernel_driver_active(0):
-            try:
-                self.dev.detach_kernel_driver(0)
-            except usb.core.USBError as e:
-                raise IOError(f"Could not detach kernel driver: {e}") from e
+        if platform.system() == "Linux":
+            if self.dev.is_kernel_driver_active(0):
+                try:
+                    self.dev.detach_kernel_driver(0)
+                except usb.core.USBError as e:
+                    raise IOError(f"Could not detach kernel driver: {e}") from e
         self.dev.reset()
         self.dev.set_configuration()
         cfg: usb.core.Configuration = self.dev.get_active_configuration()
